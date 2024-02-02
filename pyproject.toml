@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "weatherpy"
+version = "0.1.0"
+description = "CLI app for getting current and forecast weather data."
+authors = ["mikegorski <mike.gorski96@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "weatherpy", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+cyclopts = "*"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "*"
+ruff = "*"
+pyright = "*"
+pre-commit = "*"
+
+[tool.poetry.scripts]
+wthr = "weatherpy.__main__:app"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 120
+select = ["F", "E", "W", "I001"]

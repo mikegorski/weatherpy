@@ -1,0 +1,36 @@
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.5.0
+  hooks:
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+  - id: check-yaml
+  - id: check-added-large-files
+  - id: requirements-txt-fixer
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.1.6
+  hooks:
+  - id: ruff
+    types: [python]
+    args: [--fix]
+  - id: ruff-format
+    types: [python]
+- repo: https://github.com/RobertCraigie/pyright-python
+  rev: v1.1.349
+  hooks:
+  - id: pyright
+    types: [python]
+- repo: local
+  hooks:
+  - id: pytest-check
+    name: pytest-check
+    entry: pytest
+    language: system
+    pass_filenames: false
+    always_run: true
+  - id: commit-msg
+    name: Make sure that commit message starts with [FEAT] or [FIX]
+    entry: '^\[FEAT\]|^\[FIX\]'
+    language: pygrep
+    args: [ --negate ]
+    stages: [ commit-msg ]
