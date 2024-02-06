@@ -9,13 +9,15 @@ packages = [{include = "weatherpy", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-cyclopts = "*"
+cyclopts = "^2.2.0"
+ip2geotools = "^0.1.6"
+requests = "^2.31.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "*"
-ruff = "*"
-pyright = "*"
-pre-commit = "*"
+pytest = "^8.0.0"
+ruff = "^0.2.0"
+pyright = "^1.1.350"
+pre-commit = "^3.5.0"
 
 [tool.poetry.scripts]
 wthr = "weatherpy.__main__:app"
@@ -27,3 +29,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.ruff]
 line-length = 120
 select = ["F", "E", "W", "I001"]
+
+[tool.pyright]
+venvPath = "C:\\Users\\mikeg\\AppData\\Local\\pypoetry\\Cache\\virtualenvs"
+venv = "weatherpy-TpM6Q3pq-py3.11"
