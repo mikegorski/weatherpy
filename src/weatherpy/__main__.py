@@ -20,7 +20,7 @@ def wthr():
 
 @app.command
 def latest():
-    """Show weather forecast at location and in format based on your latest request."""
+    """Show weather forecast at location and in units based on your latest request."""
     ...
 
 

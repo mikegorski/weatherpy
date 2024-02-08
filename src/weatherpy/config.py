@@ -6,7 +6,7 @@ from colorama import Fore
 from colorama import init as colorama_init
 from ip2geotools.databases.noncommercial import DbIpCity
 
-from .api import api_token_valid, get_ip_address, get_locations_by_name
+from .api.comm import api_token_valid, get_ip_address, get_locations_by_name
 
 colorama_init()
 
