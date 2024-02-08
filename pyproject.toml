@@ -29,7 +29,3 @@ build-backend = "poetry.core.masonry.api"
 [tool.ruff]
 line-length = 120
 select = ["F", "E", "W", "I001"]
-
-[tool.pyright]
-venvPath = "C:\\Users\\mikeg\\AppData\\Local\\pypoetry\\Cache\\virtualenvs"
-venv = "weatherpy-TpM6Q3pq-py3.11"
