@@ -6,7 +6,8 @@ from colorama import Fore
 from colorama import init as colorama_init
 from ip2geotools.databases.noncommercial import DbIpCity
 
-from .api.comm import api_token_valid, get_ip_address, get_locations_by_name
+from weatherpy.api.comm import api_token_valid, get_ip_address, get_locations_by_name, get_locations_by_coords
+from weatherpy.api.models import Geolocation
 
 colorama_init()
 
@@ -63,7 +64,7 @@ def set_units() -> str:
     return mapping[setting]
 
 
-def location_by_city(api_token: str) -> tuple[float, float]:
+def location_by_city(api_token: str) -> Geolocation:
     while True:
         inp = input(
             f"{Fore.CYAN}\nPlease provide a name of a location. Valid example formats are:\n"
@@ -89,7 +90,7 @@ def location_by_city(api_token: str) -> tuple[float, float]:
                     f"{Fore.CYAN}[y] accept location [N] reject location and provide a different name: {Fore.RESET}"
                 )
                 if not inp or inp == "y":
-                    return loc.lat, loc.lon
+                    return loc
                 if inp != "N":
                     print(
                         f"{Fore.LIGHTRED_EX}Incorrect value chosen. "
@@ -114,10 +115,10 @@ def location_by_city(api_token: str) -> tuple[float, float]:
                 )
                 continue
             choice = locs[n - 1]
-            return choice.lat, choice.lon
+            return choice
 
 
-def location_by_coords() -> tuple[float, float]:
+def location_by_coords(api_token: str) -> Geolocation:
     while True:
         inp = input(
             f"{Fore.CYAN}Please input geographic coordinates (lat, lon) separated by a comma "
@@ -126,14 +127,57 @@ def location_by_coords() -> tuple[float, float]:
         if len(inp) < 3 or "," not in inp:
             print(f"{Fore.LIGHTRED_EX}Incorrect value typed. The correct format is latitude,longitude.{Fore.RESET}")
             continue
-        sep = ", " if " " in inp else ","
-        lat, lon = inp.split(sep)
-        if geo_coords_valid(loc=(lat, lon)):
-            return float(lat), float(lon)
-        print(
-            f"{Fore.LIGHTRED_EX}Incorrect value typed. The correct format is latitude,longitude "
-            f"using '.' as decimal separator.{Fore.RESET}"
-        )
+        cleaned_input = ''.join(inp.split())
+        lat, lon = cleaned_input.split(sep=",")
+        if not geo_coords_valid(loc=(lat, lon)):
+            print(
+                f"{Fore.LIGHTRED_EX}Incorrect value typed. The correct format is latitude,longitude "
+                f"using '.' as decimal separator."
+                f"Remember that latitude is a number in range [-90;90] and longitude [-180;180].{Fore.RESET}"
+            )
+            continue
+
+        locs = get_locations_by_coords(lat, lon, token=api_token)
+
+        if not locs:
+            print(f"{Fore.LIGHTRED_EX}Provided name couldn't be geocoded. Please try again.{Fore.RESET}")
+            continue
+
+        accepted: bool = True
+        if len(locs) == 1:
+            loc = locs[0]
+            print(f"{Fore.GREEN} Location found: {Fore.LIGHTGREEN_EX}{loc}{Fore.RESET}")
+            while True:
+                inp = input(
+                    f"{Fore.CYAN}[y] accept location [N] reject location and provide different coords: {Fore.RESET}"
+                )
+                if not inp or inp == "y":
+                    return loc
+                if inp != "N":
+                    print(
+                        f"{Fore.LIGHTRED_EX}Incorrect value chosen. "
+                        f"Please type 'y' to accept or 'N' to reject.{Fore.RESET}"
+                    )
+                    continue
+                assert inp == "N"
+                accepted = False
+                break
+            if not accepted:
+                continue
+
+        print(f"{Fore.CYAN}Several locations matching your query have been found.{Fore.RESET}")
+        for i, loc in enumerate(locs):
+            print(f"{i + 1}. {loc}")
+        while True:
+            n = int(input(f"{Fore.CYAN}Please choose the number corresponding to your choice: {Fore.RESET}"))
+            if n not in range(1, len(locs) + 1):
+                print(
+                    f"{Fore.LIGHTRED_EX}Incorrect value chosen. "
+                    f"Please choose number from range 1-{len(locs)}{Fore.RESET}"
+                )
+                continue
+            choice = locs[n - 1]
+            return choice
 
 
 def geo_coords_valid(loc) -> bool:
@@ -141,36 +185,35 @@ def geo_coords_valid(loc) -> bool:
         loc = (float(loc[0]), float(loc[1]))
     except ValueError:
         return False
-    return isinstance(loc, tuple) and len(loc) == 2
+    return -90 <= loc[0] <= 90 and -180 <= loc[1] <= 180
 
 
-def set_location(api_token: str) -> tuple[float, float]:
+def set_location(api_token: str) -> Geolocation:
     ip = get_ip_address()
     response = DbIpCity.get(ip_address=ip, api_key="free")
-    city, region, country, lat, lon = (
-        response.city,
-        response.region,
-        response.country,
-        response.latitude,
-        response.longitude,
-    )
-    while True:
-        inp = input(
-            f"{Fore.CYAN}Based on your IP address ({ip}), your default location has been set to "
-            f"{Fore.LIGHTGREEN_EX}{city}, {region}, {country} ({lat}, {lon}). "
-            f"{Fore.CYAN}Do you want to keep this setting [y] "
-            f"or provide a different location [N]? {Fore.GREEN}[default: y]{Fore.RESET} "
-        )
-        if not inp or inp == "y":
-            assert lat and lon
-            return lat, lon
-        if inp != "N":
-            print(
-                f"{Fore.LIGHTRED_EX}Incorrect response. Please type 'y' to accept or 'N' to reject current default "
-                f"setting {Fore.LIGHTMAGENTA_EX}[{city}, {region}, {country} ({lat}, {lon})].{Fore.RESET}"
+    lat, lon = response.latitude, response.longitude
+    locs = get_locations_by_coords(lat, lon, token=api_token)
+    if locs:
+        loc = locs[0]
+        while True:
+            inp = input(
+                f"{Fore.CYAN}Based on your IP address ({ip}), your default location has been set to "
+                f"{Fore.LIGHTGREEN_EX}{loc.name}, {loc.state}, {loc.country} ({loc.lat}, {loc.lon}). "
+                f"{Fore.CYAN}Do you want to keep this setting [y] "
+                f"or provide a different location [N]? {Fore.GREEN}[default: y]{Fore.RESET} "
             )
-            continue
-        break
+            if not inp or inp == "y":
+                return loc
+            if inp != "N":
+                print(
+                    f"{Fore.LIGHTRED_EX}Incorrect response. Please type 'y' to accept or 'N' to reject current default "
+                    f"setting {Fore.LIGHTGREEN_EX}[{loc.name}, {loc.state}, {loc.country} ({loc.lat}, {loc.lon})]."
+                    f"{Fore.RESET}"
+                )
+                continue
+            break
+    else:
+        print(f"{Fore.LIGHTRED_EX}Your location couldn't be determined automatically.{Fore.RESET}")
 
     while True:
         loc = None
@@ -187,7 +230,7 @@ def set_location(api_token: str) -> tuple[float, float]:
         if inp == "c":
             loc = location_by_city(api_token)
         elif inp == "l":
-            loc = location_by_coords()
+            loc = location_by_coords(api_token)
         if loc:
             return loc
         print(f"{Fore.LIGHTRED_EX}Invalid coordinates. Please try again.{Fore.RESET}")
@@ -196,14 +239,19 @@ def set_location(api_token: str) -> tuple[float, float]:
 def create_cfg_file() -> ConfigParser:
     token = set_api_key()
     units = set_units()
-    lat, lon = set_location(api_token=token)
+    geolocation: Geolocation = set_location(api_token=token)
     config = ConfigParser()
     config["SETTINGS"] = {}
     settings = config["SETTINGS"]
     settings["token"] = token
     settings["units"] = units
-    settings["lat"] = str(lat)
-    settings["lon"] = str(lon)
+    config["HOME"] = {}
+    home = config["HOME"]
+    home["name"] = geolocation.name
+    home["state/region"] = geolocation.state
+    home["country"] = geolocation.country
+    home["lat"] = str(geolocation.lat)
+    home["lon"] = str(geolocation.lon)
     if not HOME_DIR.exists():
         Path(HOME_DIR).mkdir(exist_ok=False)
     with Path.open(HOME_DIR / CFG_FILENAME, mode="w") as file:

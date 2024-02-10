@@ -20,7 +20,7 @@ class Geolocation:
 
 @dataclass
 class Weather:
-    description: str
+    description: list[str]
     temp: float
     temp_feel: float
     pressure: int
@@ -37,7 +37,12 @@ class Forecast:
 
 
 class Current:
-    def __init__(self, dt: datetime, loc: Geolocation, weather: Weather):
+    def __init__(self, dt: datetime, sunrise: datetime, sunset: datetime, loc: Geolocation, weather: Weather):
         self.dt = dt
+        self.sunrise = sunrise
+        self.sunset = sunset
         self.loc = loc
         self.weather = weather
+
+    def __str__(self):
+        return f"Location: {self.loc}\nWeather: {self.weather}"
