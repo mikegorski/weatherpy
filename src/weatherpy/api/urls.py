@@ -1,6 +1,5 @@
-from enum import Enum
 from functools import partial
-from typing import Union, TypeAlias
+from typing import TypeAlias, Union
 
 ApiURL: TypeAlias = str
 
