@@ -1,6 +1,6 @@
 class BadRequest(Exception):
-    """Exception class for handling OpenWeather API bad requests.
-    """
+    """Exception class for handling OpenWeather API bad requests."""
+
     def __init__(self, code: int, message: str):
         self.code = code
         self.message = message

@@ -6,7 +6,7 @@ from colorama import Fore
 from colorama import init as colorama_init
 from ip2geotools.databases.noncommercial import DbIpCity
 
-from weatherpy.api.comm import api_token_valid, get_ip_address, get_locations_by_name, get_locations_by_coords
+from weatherpy.api.comm import api_token_valid, get_ip_address, get_locations_by_coords, get_locations_by_name
 from weatherpy.api.models import Geolocation
 
 colorama_init()
@@ -127,7 +127,7 @@ def location_by_coords(api_token: str) -> Geolocation:
         if len(inp) < 3 or "," not in inp:
             print(f"{Fore.LIGHTRED_EX}Incorrect value typed. The correct format is latitude,longitude.{Fore.RESET}")
             continue
-        cleaned_input = ''.join(inp.split())
+        cleaned_input = "".join(inp.split())
         lat, lon = cleaned_input.split(sep=",")
         if not geo_coords_valid(loc=(lat, lon)):
             print(
@@ -137,7 +137,7 @@ def location_by_coords(api_token: str) -> Geolocation:
             )
             continue
 
-        locs = get_locations_by_coords(lat, lon, token=api_token)
+        locs = get_locations_by_coords(float(lat), float(lon), token=api_token)
 
         if not locs:
             print(f"{Fore.LIGHTRED_EX}Provided name couldn't be geocoded. Please try again.{Fore.RESET}")
@@ -191,7 +191,7 @@ def geo_coords_valid(loc) -> bool:
 def set_location(api_token: str) -> Geolocation:
     ip = get_ip_address()
     response = DbIpCity.get(ip_address=ip, api_key="free")
-    lat, lon = response.latitude, response.longitude
+    lat, lon = float(str(response.latitude)), float(str(response.longitude))
     locs = get_locations_by_coords(lat, lon, token=api_token)
     if locs:
         loc = locs[0]
@@ -254,7 +254,7 @@ def create_cfg_file() -> ConfigParser:
     home["lon"] = str(geolocation.lon)
     if not HOME_DIR.exists():
         Path(HOME_DIR).mkdir(exist_ok=False)
-    with Path.open(HOME_DIR / CFG_FILENAME, mode="w") as file:
+    with Path.open(HOME_DIR / CFG_FILENAME, mode="w", encoding="utf8") as file:
         config.write(file)
     return config
 
