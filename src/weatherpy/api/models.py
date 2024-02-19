@@ -20,7 +20,7 @@ class Geolocation:
 
 @dataclass
 class Weather:
-    description: list[str]
+    description: list[tuple[str, str]]
     temp: float
     temp_feel: float
     pressure: int
@@ -30,10 +30,16 @@ class Weather:
 
 
 class Forecast:
-    def __init__(self, dt: datetime, loc: Geolocation, weathers: list[Weather]):
-        self.dt = dt
+    def __init__(self, loc: Geolocation, weathers: list[tuple[datetime, Weather]]):
         self.loc = loc
         self.weathers = weathers
+
+    def __str__(self):
+        s = f"Location: {self.loc}\n"
+        for dt, weather in self.weathers:
+            s += f"Time: {dt}\n"
+            s += f"Weather:\n{weather}\n"
+        return s
 
 
 class Current:

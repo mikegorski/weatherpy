@@ -3,10 +3,11 @@ from datetime import datetime
 import requests
 
 from .exceptions import BadRequest
-from .models import Current, Geolocation, Weather
+from .models import Current, Forecast, Geolocation, Weather
 from .urls import (
     build_current_weather_url,
     build_direct_geocoding_url,
+    build_forecast_weather_url,
     build_ip_url,
     build_reverse_geocoding_url,
 )
@@ -59,7 +60,7 @@ def get_current_weather(lat: float, lon: float, units: str, token: str) -> Curre
         name=data["name"], country=data["sys"]["country"], state="", lat=data["coord"]["lat"], lon=data["coord"]["lon"]
     )
     weather: Weather = Weather(
-        description=[x["description"] for x in data["weather"]],
+        description=[(x["description"], x["icon"]) for x in data["weather"]],
         temp=data["main"]["temp"],
         temp_feel=data["main"]["feels_like"],
         pressure=data["main"]["pressure"],
@@ -74,3 +75,32 @@ def get_current_weather(lat: float, lon: float, units: str, token: str) -> Curre
         loc=geolocation,
         weather=weather,
     )
+
+
+def get_weather_forecast(lat: float, lon: float, units: str, token: str) -> Forecast:
+    resp = requests.get(url=build_forecast_weather_url(lat=lat, lon=lon, units=units, limit=5, appid=token))
+    data = resp.json()
+    if not resp.status_code == 200:
+        raise BadRequest(code=data["cod"], message=data["message"])
+    geolocation = Geolocation(
+        name=data["city"]["name"],
+        country=data["city"]["country"],
+        state="",
+        lat=data["city"]["coord"]["lat"],
+        lon=data["city"]["coord"]["lon"],
+    )
+    forecasted: list[tuple[datetime, Weather]] = []
+    for forecast in data["list"]:
+        dt = datetime.fromtimestamp(forecast["dt"])
+        params = forecast["main"]
+        weather: Weather = Weather(
+            description=[(x["description"], x["icon"]) for x in forecast["weather"]],
+            temp=params["temp"],
+            temp_feel=params["feels_like"],
+            pressure=params["pressure"],
+            humidity=params["humidity"],
+            wind_spd=forecast["wind"]["speed"],
+            wind_deg=forecast["wind"]["deg"],
+        )
+        forecasted.append((dt, weather))
+    return Forecast(loc=geolocation, weathers=forecasted)

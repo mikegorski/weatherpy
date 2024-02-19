@@ -2,8 +2,9 @@ from typing import Literal, Optional, Union
 
 import cyclopts
 
-from weatherpy.api.comm import get_current_weather
+from weatherpy.api.comm import get_current_weather, get_weather_forecast
 from weatherpy.api.exceptions import BadRequest
+from weatherpy.presenter.current import show_current_weather
 from weatherpy.ui.config import create_cfg_file, handle_config
 
 app = cyclopts.App(help="Weather forecast in your command line.")
@@ -27,13 +28,13 @@ def wthr(
     if not units:
         units = config["SETTINGS"]["units"]
     api_token = config["SETTINGS"]["token"]
-    print("Current weather:")
+
     try:
         curr = get_current_weather(lat=lat, lon=lon, units=units, token=api_token)
     except BadRequest as exc:
         print(exc)
         return
-    print(curr)
+    show_current_weather(weather_data=curr, units=units)
 
 
 @app.command
@@ -43,6 +44,24 @@ def config():
 
 
 @app.command
-def latest():
-    """Shows weather forecast at location and in units based on the latest request."""
-    ...
+def forecast(
+    lat: Optional[float] = None,
+    lon: Optional[float] = None,
+    units: Optional[Union[str, Literal["metric", "imperial", "standard"]]] = None,
+):
+    """Shows weather forecast for the next 5 days in 3-hour intervals."""
+    config = handle_config()
+    if not lat:
+        lat = float(config["HOME"]["lat"])
+    if not lon:
+        lon = float(config["HOME"]["lon"])
+    if not units:
+        units = config["SETTINGS"]["units"]
+    api_token = config["SETTINGS"]["token"]
+    print("Weather forecast:")
+    try:
+        forecast = get_weather_forecast(lat=lat, lon=lon, units=units, token=api_token)
+    except BadRequest as exc:
+        print(exc)
+        return
+    print(forecast)
