@@ -4,6 +4,19 @@ from datetime import datetime
 
 @dataclass
 class Geolocation:
+    """
+    Geolocation dataclass representing a geographical location.
+
+    Args:
+        name (str): The name of the location.
+        country (str): The country of the location.
+        state (str): The state of the location.
+        lat (float): The latitude of the location.
+        lon (float): The longitude of the location.
+
+    Returns:
+        str: A string representation of the geolocation."""
+
     name: str
     country: str
     state: str
@@ -20,6 +33,18 @@ class Geolocation:
 
 @dataclass
 class Weather:
+    """
+    Weather dataclass representing weather information.
+
+    Args:
+        description (list[tuple[str, str]]): The description of the weather.
+        temp (float): The temperature.
+        temp_feel (float): The perceived temperature.
+        pressure (int): The atmospheric pressure.
+        humidity (int): The humidity.
+        wind_spd (float): The wind speed.
+        wind_deg (int): The wind direction in degrees."""
+
     description: list[tuple[str, str]]
     temp: float
     temp_feel: float
@@ -30,6 +55,14 @@ class Weather:
 
 
 class Forecast:
+    """
+    Forecast class representing a weather forecast.
+
+    Args:
+        loc (Geolocation): The geolocation of the forecast.
+        weathers (list[tuple[datetime, Weather]]): The list of weather data for different times.
+    """
+
     def __init__(self, loc: Geolocation, weathers: list[tuple[datetime, Weather]]):
         self.loc = loc
         self.weathers = weathers
@@ -43,6 +76,17 @@ class Forecast:
 
 
 class Current:
+    """
+    Current class representing current weather information.
+
+    Args:
+        dt (datetime): The current date and time.
+        sunrise (datetime): The time of sunrise.
+        sunset (datetime): The time of sunset.
+        loc (Geolocation): The geolocation of the current weather.
+        weather (Weather): The weather information.
+    """
+
     def __init__(self, dt: datetime, sunrise: datetime, sunset: datetime, loc: Geolocation, weather: Weather):
         self.dt = dt
         self.sunrise = sunrise

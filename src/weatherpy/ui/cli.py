@@ -5,6 +5,7 @@ import cyclopts
 from weatherpy.api.comm import get_current_weather, get_weather_forecast
 from weatherpy.api.exceptions import BadRequest
 from weatherpy.presenter.current import show_current_weather
+from weatherpy.presenter.forecast import show_forecast
 from weatherpy.ui.config import create_cfg_file, handle_config
 
 app = cyclopts.App(help="Weather forecast in your command line.")
@@ -12,8 +13,8 @@ app = cyclopts.App(help="Weather forecast in your command line.")
 
 @app.default
 def wthr(
-    lat: Optional[float] = None,
-    lon: Optional[float] = None,
+    city: Optional[str] = None,
+    coords: Optional[tuple[float, float]] = None,
     units: Optional[Union[str, Literal["metric", "imperial", "standard"]]] = None,
 ):
     """Shows the current weather parameters based on default settings from the
@@ -21,10 +22,11 @@ def wthr(
     Settings can be optionally overridden using arguments provided to this command.
     If configuration file is not found, user is first led by the program through configuration step."""
     config = handle_config()
-    if not lat:
+    if not coords:
         lat = float(config["HOME"]["lat"])
-    if not lon:
         lon = float(config["HOME"]["lon"])
+    else:
+        lat, lon = coords
     if not units:
         units = config["SETTINGS"]["units"]
     api_token = config["SETTINGS"]["token"]
@@ -64,4 +66,4 @@ def forecast(
     except BadRequest as exc:
         print(exc)
         return
-    print(forecast)
+    show_forecast(forecast, units)

@@ -12,6 +12,7 @@ python = "^3.8"
 cyclopts = "^2.2.0"
 ip2geotools = "^0.1.6"
 requests = "^2.31.0"
+plotext = "^5.2.8"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
