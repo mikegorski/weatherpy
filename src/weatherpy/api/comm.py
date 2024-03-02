@@ -1,6 +1,9 @@
 from datetime import datetime
 
 import requests
+from requests import Response
+from requests.exceptions import ConnectionError, RequestException
+from rich import print
 
 from .exceptions import BadRequest
 from .models import Current, Forecast, Geolocation, Weather
@@ -13,19 +16,29 @@ from .urls import (
 )
 
 
+def handle_request(url: str) -> Response:
+    """Handles GET requests with possible errors."""
+    try:
+        resp = requests.get(url=url)
+    except (RequestException, ConnectionError):
+        print("[bold red]An error occurred. Please check your network connection and try again.[/]")
+        exit(1)
+    return resp
+
+
 def get_ip_address() -> str:
-    resp = requests.get(url=build_ip_url())
+    resp = handle_request(url=build_ip_url())
     return resp.text
 
 
 def api_token_valid(token: str) -> bool:
-    resp = requests.get(url=build_direct_geocoding_url(q="London", appid=token))
+    resp = handle_request(url=build_direct_geocoding_url(q="London", appid=token))
     return resp.status_code == 200
 
 
 def get_locations_by_name(name: str, token: str) -> list[Geolocation]:
-    resp = requests.get(url=build_direct_geocoding_url(q=name, limit=5, appid=token))
-    if not resp.status_code == 200:
+    resp = handle_request(url=build_direct_geocoding_url(q=name, limit=5, appid=token))
+    if resp.status_code != 200:
         return []
     locs: list[Geolocation] = []
     for loc in resp.json():
@@ -38,8 +51,8 @@ def get_locations_by_name(name: str, token: str) -> list[Geolocation]:
 
 
 def get_locations_by_coords(lat: float, lon: float, token: str) -> list[Geolocation]:
-    resp = requests.get(url=build_reverse_geocoding_url(lat=lat, lon=lon, limit=5, appid=token))
-    if not resp.status_code == 200:
+    resp = handle_request(url=build_reverse_geocoding_url(lat=lat, lon=lon, limit=5, appid=token))
+    if resp.status_code != 200:
         return []
     locs: list[Geolocation] = []
     for loc in resp.json():
@@ -52,9 +65,9 @@ def get_locations_by_coords(lat: float, lon: float, token: str) -> list[Geolocat
 
 
 def get_current_weather(lat: float, lon: float, units: str, token: str) -> Current:
-    resp = requests.get(url=build_current_weather_url(lat=lat, lon=lon, units=units, limit=5, appid=token))
+    resp = handle_request(url=build_current_weather_url(lat=lat, lon=lon, units=units, limit=5, appid=token))
     data = resp.json()
-    if not resp.status_code == 200:
+    if resp.status_code != 200:
         raise BadRequest(code=data["cod"], message=data["message"])
     geolocation = Geolocation(
         name=data["name"], country=data["sys"]["country"], state="", lat=data["coord"]["lat"], lon=data["coord"]["lon"]
@@ -78,9 +91,9 @@ def get_current_weather(lat: float, lon: float, units: str, token: str) -> Curre
 
 
 def get_weather_forecast(lat: float, lon: float, units: str, token: str) -> Forecast:
-    resp = requests.get(url=build_forecast_weather_url(lat=lat, lon=lon, units=units, limit=5, appid=token))
+    resp = handle_request(url=build_forecast_weather_url(lat=lat, lon=lon, units=units, limit=5, appid=token))
     data = resp.json()
-    if not resp.status_code == 200:
+    if resp.status_code != 200:
         raise BadRequest(code=data["cod"], message=data["message"])
     geolocation = Geolocation(
         name=data["city"]["name"],

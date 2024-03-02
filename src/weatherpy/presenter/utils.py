@@ -18,10 +18,10 @@ def get_wind_direction(deg: int) -> Wind:
         return Wind.W
     elif 292.5 <= deg < 337.5:
         return Wind.NW
-    elif 337.5 <= deg <= 359:
+    elif 337.5 <= deg <= 360:
         return Wind.N
     else:
-        raise ValueError(f"Incorrect wind direction value: {deg}. Should be a number between 0 and 359.")
+        raise ValueError(f"Incorrect wind direction value: {deg}. Should be a number between 0 and 360.")
 
 
 UNIT_MAP: dict[str, dict] = {

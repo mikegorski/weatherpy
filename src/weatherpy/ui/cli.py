@@ -6,7 +6,7 @@ from weatherpy.api.comm import get_current_weather, get_weather_forecast
 from weatherpy.api.exceptions import BadRequest
 from weatherpy.presenter.current import show_current_weather
 from weatherpy.presenter.forecast import show_forecast
-from weatherpy.ui.config import create_cfg_file, handle_config
+from weatherpy.ui.config import create_cfg_file, display_config, handle_config
 
 app = cyclopts.App(help="Weather forecast in your command line.")
 
@@ -40,9 +40,12 @@ def wthr(
 
 
 @app.command
-def config():
-    """Lets user modify the configuration file."""
-    _ = create_cfg_file()
+def config(display: Optional[bool] = False):
+    """Lets user overwrite the configuration file or display it."""
+    if display:
+        display_config()
+    else:
+        _ = create_cfg_file()
 
 
 @app.command
