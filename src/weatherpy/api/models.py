@@ -43,7 +43,10 @@ class Weather:
         pressure (int): The atmospheric pressure.
         humidity (int): The humidity.
         wind_spd (float): The wind speed.
-        wind_deg (int): The wind direction in degrees."""
+        wind_deg (int): The wind direction in degrees.
+        rain (dict[str, int]): A dictionary containing mm of rainfall in the last hour and last 3 hours
+        snow (dict[str, int]): A dictionary containing mm of snowfall in the last hour and last 3 hours
+    """
 
     description: list[tuple[str, str]]
     temp: float
@@ -52,6 +55,8 @@ class Weather:
     humidity: int
     wind_spd: float
     wind_deg: int
+    rain: dict[str, int]
+    snow: dict[str, int]
 
 
 class Forecast:

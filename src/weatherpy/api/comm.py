@@ -80,6 +80,8 @@ def get_current_weather(lat: float, lon: float, units: str, token: str) -> Curre
         humidity=data["main"]["humidity"],
         wind_spd=data["wind"]["speed"],
         wind_deg=data["wind"]["deg"],
+        rain=data.get("rain", {}),
+        snow=data.get("snow", {}),
     )
     return Current(
         dt=datetime.fromtimestamp(data["dt"]),
@@ -114,6 +116,8 @@ def get_weather_forecast(lat: float, lon: float, units: str, token: str) -> Fore
             humidity=params["humidity"],
             wind_spd=forecast["wind"]["speed"],
             wind_deg=forecast["wind"]["deg"],
+            rain=forecast.get("rain", {}),
+            snow=forecast.get("snow", {}),
         )
         forecasted.append((dt, weather))
     return Forecast(loc=geolocation, weathers=forecasted)
