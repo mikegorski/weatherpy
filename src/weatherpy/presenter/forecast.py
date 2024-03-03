@@ -34,7 +34,6 @@ class WeatherPlot(JupyterMixin):
         self,
         x,
         y,
-        tick_labels: list[str],
         plotting_fn: Callable = plt.plot,
         xlabel: str = "",
         datalabel: Union[str, list[str]] = "",
@@ -47,7 +46,6 @@ class WeatherPlot(JupyterMixin):
         self.decoder = AnsiDecoder()
         self.x = x
         self.y = y
-        self.tick_labels = tick_labels
         self.plotting_fn = plotting_fn
         self.xlabel = xlabel
         self.datalabel = datalabel
@@ -71,9 +69,8 @@ class WeatherPlot(JupyterMixin):
         plt.xaxes(1, 0)
         plt.yaxes(1, 0)
         plt.xlabel(self.xlabel)
-        # tbd based on https://github.com/piccolomo/plotext/issues/177
-        # xticks = list(range(0, 121, 8))
-        # plt.xticks(ticks=xticks, labels=self.tick_labels)
+        xticks = self.x[::2]
+        plt.xticks(ticks=xticks, labels=[datetime.fromtimestamp(dt).strftime("%a %H:%M") for dt in xticks])
         plt.theme("clear")
         return plt.build()
 
@@ -82,14 +79,13 @@ def show_forecast(forecast: Forecast, units: str) -> None:
     layout = make_layout()
 
     header = layout["header"]
-    title = f"Showing weather forecast for :globe_with_meridians: {forecast.loc}"
+    title = f":globe_with_meridians: {forecast.loc}"
     header.update(title)
-    dts = [(dt - datetime.now()).total_seconds() // 3600 for dt, _ in forecast.weathers]
+    dts = [int(round(dt.timestamp())) for dt, _ in forecast.weathers]
 
     temp_layout = layout["1st"]
     temp_plot = Panel(
         WeatherPlot(
-            tick_labels=[dt.strftime("%H:%M") for dt, _ in forecast.weathers],
             x=dts,
             y=[weather.temp for _, weather in forecast.weathers],
             y2=[weather.temp_feel for _, weather in forecast.weathers],
@@ -104,7 +100,6 @@ def show_forecast(forecast: Forecast, units: str) -> None:
     wind_layout = layout["2nd"]
     wind_plot = Panel(
         WeatherPlot(
-            tick_labels=[dt.strftime("%H:%M") for dt, _ in forecast.weathers],
             x=dts,
             y=[weather.wind_spd * mult for _, weather in forecast.weathers],
             datalabel=f"Speed [{UNIT_MAP[units]['wind']}]",
@@ -117,15 +112,14 @@ def show_forecast(forecast: Forecast, units: str) -> None:
     precipitation_layout = layout["3rd"]
     precipitation_plot = Panel(
         WeatherPlot(
-            tick_labels=[dt.strftime("%H:%M") for dt, _ in forecast.weathers],
             x=dts,
             y=[
                 [weather.rain.get("3h", 0) for _, weather in forecast.weathers],
                 [weather.snow.get("3h", 0) for _, weather in forecast.weathers],
             ],
             plotting_fn=plt.stacked_bar,
-            datalabel=["Rain [mm]", "Snow [mm]"],
-            markers=None,
+            datalabel=[" Rain [mm]", " Snow [mm]"],
+            markers=["braille", "snowflake"],
         ),
         title="Precipitation in the Last 3 Hours",
     )
@@ -134,7 +128,6 @@ def show_forecast(forecast: Forecast, units: str) -> None:
     pressure_layout = layout["4th"]
     pressure_plot = Panel(
         WeatherPlot(
-            tick_labels=[dt.strftime("%H:%M") for dt, _ in forecast.weathers],
             x=dts,
             y=[weather.pressure for _, weather in forecast.weathers],
             datalabel="Pressure [hPa]",

@@ -145,12 +145,12 @@ def set_location_by_coords(api_token: str) -> Geolocation:
             return choice
 
 
-def geo_coords_valid(loc) -> bool:
+def geo_coords_valid(loc: tuple[str, str]) -> bool:
     try:
-        loc = (float(loc[0]), float(loc[1]))
-    except ValueError:
+        loc2 = (float(loc[0]), float(loc[1]))
+    except (ValueError, TypeError):
         return False
-    return -90 <= loc[0] <= 90 and -180 <= loc[1] <= 180
+    return -90 <= loc2[0] <= 90 and -180 <= loc2[1] <= 180
 
 
 def determine_location_based_on_ip(api_token: str) -> tuple[str, Optional[Geolocation]]:
