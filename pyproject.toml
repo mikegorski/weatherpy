@@ -8,7 +8,7 @@ readme = "README.md"
 packages = [{include = "weatherpy", from = "src"}]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.10"
 cyclopts = "^2.2.0"
 ip2geotools = "^0.1.6"
 requests = "^2.31.0"
