@@ -26,7 +26,7 @@ def create_location_and_time_panel(weather_data: Current) -> Panel:
 
 def create_current_weather_panel(weather_data: Current, units: str) -> Panel:
     weather_txt: str = (
-        "".join(f"{API_ICON_TO_EMOJI[icon]} {desc.title()}" for desc, icon in weather_data.weather.description) + "\n"
+        " ".join(f"{API_ICON_TO_EMOJI[icon]} {desc.title()}" for desc, icon in weather_data.weather.description) + "\n"
     )
     weather_txt += f":thermometer: {weather_data.weather.temp:+.1f}{UNIT_MAP[units]['temp']}"
     weather_txt += f", feels like {weather_data.weather.temp_feel:+.1f}{UNIT_MAP[units]['temp']}\n"
@@ -38,16 +38,14 @@ def create_current_weather_panel(weather_data: Current, units: str) -> Panel:
     wind_speed = int(wind_speed)
     weather_txt += f":dash: {wind_speed} {UNIT_MAP[units]['wind']} {wind_dir}"
     weather_txt += "\n"
-
     weather_txt += f"{weather_data.weather.pressure} hPa, :sweat_drops: {weather_data.weather.humidity}%"
+
     if rain := weather_data.weather.rain:
-        weather_txt += f":droplet: [b]{rain.get('1h', 0)} mm[/b] last hour | [b]{rain.get('3h', 0)} mm[/b] last 3 hours"
         weather_txt += "\n"
+        weather_txt += f":droplet: [b]{rain.get('1h', 0)} mm[/b] last hour"
     if snow := weather_data.weather.snow:
-        weather_txt += (
-            f":snowflake: [b]{snow.get('1h', 0)} mm[/b] last hour | [b]{snow.get('3h', 0)} mm[/b] last 3 hours"
-        )
         weather_txt += "\n"
+        weather_txt += f":snowflake: [b]{snow.get('1h', 0)} mm[/b] last hour"
 
     return Panel(
         renderable=weather_txt,
