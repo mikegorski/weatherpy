@@ -11,7 +11,7 @@ from rich.panel import Panel
 
 from weatherpy.api.models import Forecast
 
-from .utils import UNIT_MAP, get_wind_direction
+from .utils import UNIT_MAP, get_wind_direction, round_down_to_closest_multiple
 
 
 def make_layout() -> Layout:
@@ -69,10 +69,24 @@ class WeatherPlot(JupyterMixin):
         plt.xaxes(1, 0)
         plt.yaxes(1, 0)
         plt.xlabel(self.xlabel)
-        xticks = self.x[::2]
-        plt.xticks(ticks=xticks, labels=[datetime.fromtimestamp(dt).strftime("%a %H:%M") for dt in xticks])
+        xticks, labels = self._make_x_axis_labels()
+        plt.xticks(ticks=xticks, labels=labels)
         plt.theme("clear")
         return plt.build()
+
+    def _make_x_axis_labels(self) -> tuple[list[int], list[str]]:
+        mx = self.x[-1]
+        t = int(round_down_to_closest_multiple(datetime.now().timestamp(), 24 * 3600)) - 3600
+        xticks = []
+        while t <= mx:
+            xticks.append(t)
+            t += 8 * 3600
+        labels = []
+        for t in xticks:
+            dt = datetime.fromtimestamp(t)
+            fmt = "%H:%M" if dt.hour else "%a %H:%M"
+            labels.append(dt.strftime(fmt))
+        return xticks, labels
 
 
 def show_forecast(forecast: Forecast, units: str) -> None:

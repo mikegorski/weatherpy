@@ -1,4 +1,8 @@
+from typing import TypeAlias
+
 from weatherpy.presenter.symbols import DEGREE, Wind
+
+Number: TypeAlias = int | float
 
 
 def get_wind_direction(deg: int) -> Wind:
@@ -29,3 +33,7 @@ UNIT_MAP: dict[str, dict] = {
     "metric": {"temp": f"{DEGREE}C", "wind": "km/h"},
     "imperial": {"temp": f"{DEGREE}F", "wind": "mph"},
 }
+
+
+def round_down_to_closest_multiple(num: Number, mult: Number) -> Number:
+    return num // mult * mult
