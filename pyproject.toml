@@ -8,14 +8,15 @@ readme = "README.md"
 packages = [{include = "weatherpy", from = "src"}]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-cyclopts = "*"
+python = "^3.10"
+cyclopts = "^2.2.0"
+ip2geotools = "^0.1.6"
+requests = "^2.31.0"
+plotext = "^5.2.8"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "*"
-ruff = "*"
-pyright = "*"
-pre-commit = "*"
+pytest = "^8.0.0"
+pre-commit = "^3.5.0"
 
 [tool.poetry.scripts]
 wthr = "weatherpy.__main__:app"
